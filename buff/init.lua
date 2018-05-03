@@ -1,0 +1,7 @@
+include 'ac.buff.template'
+include 'ac.buff.击退'
+include 'ac.buff.减速'
+include 'ac.buff.硬直'
+include 'ac.buff.晕眩'
+include 'ac.buff.沉默'
+include 'ac.buff.嘲讽'
