@@ -1,4 +1,4 @@
-local coro = require 'ac.coroutine'
+local coro = require 'ac.base.coroutine'
 
 local rpc_lib = {}
 local services = {}
