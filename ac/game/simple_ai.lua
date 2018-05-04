@@ -5,7 +5,6 @@ mt.pulse = 200
 function mt:on_add()
     self._simple_ai = {
         attack = ac.ai_attack {},
-        guard = self:get_point(),
         mode = 'none',
     }
 end
@@ -15,8 +14,19 @@ function mt:on_remove()
 end
 
 local function approach_cast(unit)
-    local command = hero:get_walking_command()
+    local command = unit:get_walk_command()
     return command and command ~= 'attack' and command ~= 'walk'
+end
+
+local function walk(unit, target)
+    if not target then
+        return false
+    end
+    unit:walk(target)
+    if unit:get_point() * target < 200 then
+        return true
+    end
+    return false
 end
 
 function mt:on_idle()
@@ -34,6 +44,21 @@ function mt:on_idle()
         return
     end
 
+    -- 重置归位
+    if state.guard then
+        if unit:get_point() * state.guard < 100 then
+            state.guard = nil
+        end
+    end
+
+    -- 超出追击限制，归位并禁止搜敌
+    if state.chase_limit and state.guard then
+        if unit:get_point() * state.guard > state.chase_limit then
+            unit:walk(state.guard)
+            return
+        end
+    end
+
     -- 没有攻击能力，禁止搜敌
     if not attack_skill then
         return
@@ -41,6 +66,12 @@ function mt:on_idle()
     
     -- 不允许自动攻击，禁止搜敌
     if not state.search then
+        return
+    end
+
+    -- 自己移动，禁止搜敌
+    if unit:is_walking() and not state.walk then
+        state.guard = nil
         return
     end
 
@@ -61,11 +92,29 @@ function mt:on_idle()
     end
     if target then
         unit:attack(target)
+        if not state.guard then
+            state.guard = unit:get_point()
+        end
+        return
+    end
+
+    -- 搜不到敌人，归位
+    if state.guard then
+        unit:walk(state.guard)
+        return
+    end
+
+    -- 沿着路线移动
+    if state.walk then
+        if walk(unit, state.walk[state.walk_index]) then
+            state.walk_index = state.walk_index + 1
+        end
+        return
     end
 end
 
 local function init_ai(unit)
-    if unit.unit._simple_ai then
+    if unit._simple_ai then
         return
     end
     unit:add_ai '简易AI' {}
@@ -123,17 +172,5 @@ end
 function ac.simple_ai.walk(unit, points)
     init_ai(unit)
     unit._simple_ai.walk = points
-    unit._simple_ai.walk_index = 0
-end
-
--- 跟随单位
---   unit(unit) - 单位
---   target(unit/nil) - 跟随目标，设置为nil可以取消跟随
---   range(number) - 最大跟随范围
---   [range_min(number)] - 最小跟随范围
-function ac.simple_ai.follow(unit, target, range, range_min)
-    init_ai(unit)
-    unit._simple_ai.follow = target
-    unit._simple_ai.follow_range = range
-    unit._simple_ai.follow_range_min = range_min
+    unit._simple_ai.walk_index = 1
 end
