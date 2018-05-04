@@ -5,7 +5,6 @@ mt.pulse = 200
 function mt:on_add()
     self._simple_ai = {
         attack = ac.ai_attack {},
-        chase_limit = 0,
         guard = self:get_point(),
         mode = 'none',
     }
@@ -84,7 +83,7 @@ end
 
 -- 设置追击限制
 --   unit(unit) - 单位
---   range(number/nil) - 0表示不允许追击，nil表示无限制，默认为0
+--   range(number/nil) - 0表示不允许追击，nil表示无限制
 function ac.simple_ai.chase_limit(unit, range)
     init_ai(unit)
     unit._simple_ai.chase_limit = range
@@ -124,6 +123,7 @@ end
 function ac.simple_ai.walk(unit, points)
     init_ai(unit)
     unit._simple_ai.walk = points
+    unit._simple_ai.walk_index = 0
 end
 
 -- 跟随单位
