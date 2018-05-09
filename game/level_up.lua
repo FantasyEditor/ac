@@ -15,10 +15,10 @@ local function add_level(hero)
     update_upgradable(hero)
 end
 
-ac.max_level = 0
+ac.game.max_level = 0
 function ac.game:set_level_exp(list)
     level_exp = list
-    ac.max_level = #list+1
+    ac.game.max_level = #list+1
 end
 
 function ac.runtime.unit:get_level()

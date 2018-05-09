@@ -18,7 +18,7 @@ ac.game:event('单位-死亡', function(_, hero)
         player:set('复活时间上限', new_time)
     end
     reborn_timer[hero] = ac.wait(new_time, function()
-        hero:reborn(point)
+        hero:reborn(point or hero:get_point())
     end)
     log.info('英雄死亡', hero, '等级', hero:get_level(), '复活时间', new_time)
 end)
