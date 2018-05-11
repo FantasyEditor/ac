@@ -294,8 +294,8 @@ end
 --   target(unit) - 目标单位
 --   threat(integer) - 仇恨值
 --   [time(integer)] - 持续时间（毫秒）
-function ac.simple_ai.add_unit_threat(unit, target, threat, time)
-    unit._simple_ai.attack:add_team_threat(target, threat, time)
+function ac.simple_ai.add_threat(unit, target, threat, time)
+    unit._simple_ai.attack:add_threat(target, threat, time)
 end
 
 -- 沿着路线移动
