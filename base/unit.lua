@@ -82,6 +82,12 @@ function mt:is_ally(dest)
     return self:get_team_id() == dest:get_team_id()
 end
 
+-- 获取队伍
+function mt:get_team()
+    local id = self:get_team_id()
+    return ac.team(id)
+end
+
 --是否是敌人
 --	对方单位(玩家)
 function mt:is_enemy(dest)

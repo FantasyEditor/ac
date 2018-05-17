@@ -29,6 +29,16 @@ function mt:__debugger_extand()
     return setmetatable(attr, proxy)
 end
 
+function mt:get_team()
+    local id = self:get_team_id()
+    return ac.team(id)
+end
+
+function mt:set_team(team)
+    local id = team:get_id()
+    self:set_team_id(id)
+end
+
 function mt:event(name, f)
     return ac.event_register(self, name, f)
 end
