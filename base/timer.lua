@@ -200,10 +200,6 @@ function ac.wait(timeout, on_timer)
 end
 
 function ac.loop(timeout, on_timer)
-    if timeout < FRAME then
-        error('循环计时器周期不能小于一帧')
-        return
-    end
     local t = setmetatable({
         ['timeout'] = math_floor(timeout),
         ['on_timer'] = on_timer,
@@ -215,10 +211,6 @@ end
 function ac.timer(timeout, count, on_timer)
     if count == 0 then
         return ac.loop(timeout, on_timer)
-    end
-    if timeout < FRAME then
-        error('循环计时器周期不能小于一帧')
-        return
     end
     local t = setmetatable({
         ['timeout'] = math_floor(timeout),

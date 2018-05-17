@@ -72,6 +72,7 @@ end)
 ac.game:event('单位-升级', function(_, hero)
     if hero:get_type() == '英雄' and not hero:is_illusion() then
         hero:add('技能点', 1)
+        update_upgradable(hero)
     end
 end)
 
@@ -80,3 +81,17 @@ ac.game:event('单位-重载', function(_, hero)
     update_hero_skill(hero)
     update_upgradable(hero)
 end)
+
+function ac.runtime.unit:add_skill_points(n)
+    hero:add('技能点', n)
+    update_upgradable(hero)
+end
+
+function ac.runtime.unit:set_skill_points(n)
+    hero:set('技能点', n)
+    update_upgradable(hero)
+end
+
+function ac.runtime.unit:get_skill_points()
+    return self:get '技能点'
+end

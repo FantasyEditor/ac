@@ -59,3 +59,11 @@ function ac.runtime.unit:add_exp(exp, reason)
     self:event_notify('单位-获得经验', data)
     return exp
 end
+
+function ac.runtime.unit:get_exp()
+    return self:get '经验'
+end
+
+function ac.runtime.unit:get_max_exp()
+    return self:get '经验上限'
+end

@@ -178,6 +178,8 @@ local function lock_attack(unit, state)
         state.chase_clock = clock
         return true
     end
+
+    return true
 end
 
 function mt:on_idle()

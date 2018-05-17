@@ -74,3 +74,12 @@ function ac.rpc(f)
     local co = coro.create(f)
     coro.resume(co, rpc)
 end
+
+function ac.rpc_bank_query(rpc, player)
+    local ok, res = rpc.bank.query(player)
+    if ok then
+        return res
+    else
+        return 0
+    end
+end

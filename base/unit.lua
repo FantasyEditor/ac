@@ -47,6 +47,22 @@ function mt:is_in_range(p, radius)
     return self:get_point() * p:get_point() - self:get_selected_radius() <= radius
 end
 
+-- 技能
+function mt:simple_cast(name, callback)
+    local skill = self:find_skill(name)
+    if skill then
+        skill:simple_cast(callback)
+    end
+end
+
+function mt:remove_skill(name)
+    for skill in self:each_skill() do
+        if skill:get_name() == name then
+            skill:remove()
+        end
+    end
+end
+
 --移除Buff
 --	buff名称
 function mt:remove_buff(name)
@@ -182,4 +198,9 @@ function mt:stop_attack()
     if skill and not skill:is_skill() then
         skill:stop()
     end
+end
+
+function mt:get_walk_target()
+    local order, target = self:get_walk_command()
+    return target
 end
