@@ -8,6 +8,14 @@ function mt:get_id()
     return self.id
 end
 
+function mt:playe_sound(path)
+    ac.game:playe_sound(self.id, path)
+end
+
+function mt:set_winner()
+    ac.game:set_winner(self.id)
+end
+
 function mt:each_player()
     local next_player = ac.each_player()
     local function next()
