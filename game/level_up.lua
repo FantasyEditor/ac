@@ -37,8 +37,8 @@ function ac.runtime.unit:add_level(n)
     self:set_level(self:get '等级' + n)
 end
 
-function ac.runtime.unit:add_exp(exp, reason)
-    local data = {hero = self, exp = exp, reason = reason or '未知'}
+function ac.runtime.unit:add_exp(exp)
+    local data = {hero = self, exp = exp}
     self:event_notify('单位-即将获得经验', data)
     if self:get '经验上限' <= 0 then
         data.exp = 0
