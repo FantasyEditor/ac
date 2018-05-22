@@ -6,6 +6,9 @@ local weak_mt = { __mode = 'kv' }
 mt.max = 0
 
 function mt:insert(obj)
+    if self.table[obj] then
+        return
+    end
     self.max = self.max + 1
     self.table[obj] = self.max
 end
