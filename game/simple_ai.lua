@@ -4,6 +4,13 @@ mt.pulse = 200
 
 function mt:on_add(state)
     self._simple_ai = state
+    local data = self:get_data()
+    if state.search == nil then
+        state.search = data.SimpleAiSearch
+    end
+    if state.chase_limit == nil then
+        state.chase_limit = data.SimpleAiChaseLimit
+    end
 end
 
 function mt:on_remove()
