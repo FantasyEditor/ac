@@ -63,7 +63,6 @@ local function init()
     local teams = {}
     for id, data in pairs(ac.table.config) do
         local player = ac.player(id)
-        ac.force[id] = ac.force {player}
         list[#list+1] = player
         local source, team = data[1], data[2]
         if source == 'computer' then
