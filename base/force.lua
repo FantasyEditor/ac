@@ -58,12 +58,32 @@ local player_api = {
 
 local function init()
     local list = {}
-    for player in ac.each_player() do
-        local id = player:get_slot_id()
+    local users = {}
+    local computers = {}
+    local teams = {}
+    for id, data in pairs(ac.table.config) do
+        local player = ac.player(id)
         ac.force[id] = ac.force {player}
         list[#list+1] = player
+        local source, team = data[1], data[2]
+        if source == 'computer' then
+            computers[#computers+1] = player
+        elseif source == 'user' then
+            users[#users+1] = player
+        end
+        if not teams[team] then
+            teams[team] = {}
+        end
+        teams[team][#teams[team]+1] = player
     end
+
     ac.force.all = ac.force(list)
+    ac.force.computer = ac.force(computers)
+    ac.force.user = ac.force(users)
+    ac.force.team = {}
+    for team, list in pairs(teams) do
+        ac.force.team[team] = ac.force(list)
+    end
 
     for _, api in ipairs(player_api) do
         mt[api] = function (self, ...)
