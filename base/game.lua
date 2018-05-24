@@ -3,3 +3,7 @@ function ac.game:message(data)
         player:message(data)
     end
 end
+
+function ac.game:get_winner_team()
+    return ac.team(self:get_winner())
+end
