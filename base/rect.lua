@@ -31,11 +31,14 @@ function ac.rect(...)
         local p1, p2 = ...
         local x1, y1 = p1:get_xy()
         local x2, y2 = p2:get_xy()
+        if x1 > x2 then
+            x1, x2 = x2, x1
+        end
+        if y1 > y2 then
+            y2, y1 = y1, y2
+        end
         local width = x2 - x1
         local height = y2 - y1
-        if width < 0 or height < 0 then
-            return nil
-        end
         local point = ac.point(x1 + width / 2.0, y1 + height / 2.0)
         return setmetatable({ _point = point, _width = width, _height = height }, mt)
     elseif count == 3 then
