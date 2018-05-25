@@ -51,6 +51,15 @@ function mt:in_range(p, r)
     return self
 end
 
+--圆形范围
+--  圆形对象
+function mt:in_circle(circle)
+    self.filter_in = 0
+    self.center = circle:get_point()
+    self.r = circle:get_range()
+    return self
+end
+
 --扇形范围
 --	圆心
 --	半径
@@ -75,6 +84,20 @@ function mt:in_line(p, angle, len, width)
     self.center = p
     self.angle = angle
     self.len = len
+    self.width = width
+    return self
+end
+
+--矩形范围
+--  矩形对象
+function mt:in_rect(rect)
+    local x0, y0 = rect:get_point():get_xy()
+    local width = rect:get_width()
+    local height = rect:get_height()
+    self.filter_in = 2
+    self.center = ac.point(x0, y0 - height / 2.0)
+    self.angle = 0.0
+    self.len = height
     self.width = width
     return self
 end
