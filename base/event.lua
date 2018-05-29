@@ -116,11 +116,13 @@ function ac.event_register(obj, name, f)
     if not event then
         event = {}
         events[name] = event
+        local ac_event = event_subscribe_list[name] or name
         if obj.event_subscribe then
-            local ac_event = event_subscribe_list[name] or name
             obj:event_subscribe(ac_event)
-            function event:remove()
-                events[name] = nil
+        end
+        function event:remove()
+            events[name] = nil
+            if obj.event_unsubscribe then
                 obj:event_unsubscribe(ac_event)
             end
         end
