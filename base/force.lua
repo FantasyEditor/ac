@@ -61,7 +61,7 @@ local function init()
     local users = {}
     local computers = {}
     local teams = {}
-    for id, data in pairs(ac.table.config) do
+    for id, data in pairs(ac.table.config.player_setting) do
         local player = ac.player(id)
         list[#list+1] = player
         local source, team = data[1], data[2]
