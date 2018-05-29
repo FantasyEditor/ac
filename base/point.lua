@@ -61,8 +61,8 @@ end
 
 --按照极坐标系移动(point - {angle, distance})
 --	@新点
-local cos = math.cos
-local sin = math.sin
+local cos = ac.math.cos
+local sin = ac.math.sin
 function mt:__sub(data)
     local x, y = self[1], self[2]
     local angle, distance = data[1], data[2]
@@ -80,7 +80,7 @@ function mt:__mul(dest)
 end
 
 --求方向(mt / point)
-local atan = math.atan
+local atan = ac.math.atan
 function mt:__div(dest)
     local x1, y1 = self[1], self[2]
     local x2, y2 = dest[1], dest[2]
