@@ -12,8 +12,19 @@ local function add_level(hero)
         hero:set('经验', 0)
     end
     log.info('英雄升级', hero, '等级', lv, '剩余经验', hero:get '经验', '经验上限', hero:get '经验上限')
-    update_upgradable(hero)
 end
+
+ac.game:event('单位-初始化', function(_, hero)
+    if hero:get_type() ~= '英雄' or hero:is_illusion() then
+        return
+    end
+
+    if ac.game.max_level <= 0 then
+        return
+    end
+
+    hero:set_level(1)
+end)
 
 ac.game.max_level = 0
 function ac.game:set_level_exp(list)
@@ -26,7 +37,7 @@ function ac.runtime.unit:get_level()
 end
 
 function ac.runtime.unit:set_level(n)
-    for _ = self:get '等级' + 1, math.min(n, ac.max_level) do
+    for _ = self:get '等级' + 1, math.min(n, ac.game.max_level) do
         self:set('等级', self:get '等级' + 1)
         add_level(self)
         self:event_notify('单位-升级', self)

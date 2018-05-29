@@ -35,14 +35,8 @@ local function update_upgradable(hero)
 end
 
 ac.game:event('单位-初始化', function(_, hero)
-    hero:set('等级', 1)
     if hero:get_type() ~= '英雄' or hero:is_illusion() then
         return
-    end
-
-    hero:add('技能点', 1)
-    if level_exp and level_exp[1] then
-        hero:set('经验上限', level_exp[1])
     end
     
     -- 学习技能
