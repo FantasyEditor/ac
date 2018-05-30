@@ -56,7 +56,7 @@ function ac.runtime.unit:add_exp(exp)
     end
     exp = data.exp
     if exp <= 0 then
-        data.exp = 0
+        exp = 0
     end
     self:add('经验', exp)
     while self:get '经验上限' > 0 and self:get '经验' >= self:get '经验上限' do
