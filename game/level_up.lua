@@ -59,7 +59,10 @@ function ac.runtime.unit:add_exp(exp)
         exp = 0
     end
     self:add('经验', exp)
-    while self:get '经验上限' > 0 and self:get '经验' >= self:get '经验上限' do
+    for _ = self:get_level(), ac.game.max_level do
+        if self:get '经验上限' <= 0 or self:get '经验' < self:get '经验上限' then
+            break
+        end
         self:add('经验', - self:get '经验上限')
         self:set('经验上限', 0)
         exp = exp - self:get '经验'
