@@ -144,7 +144,7 @@ local hero_list = setmetatable({}, { __index = function(self, key)
 end})
 
 function ac.cheat.addhero(player, cmd)
-    local hero = player:get_first_hero()
+    local hero = player:get_hero()
     local name, playerid = cmd[2], tonumber(cmd[3])
     local heroid = tonumber(name)
     if heroid then
@@ -190,7 +190,7 @@ function ac.cheat.hero(player, cmd)
     elseif not ac.table.unit[name] then
         name = nil
     end
-    local hero = player:get_first_hero()
+    local hero = player:get_hero()
     if not name then
         if hero then
             name = hero:get_name()
@@ -226,7 +226,7 @@ function ac.cheat.self(player, cmd)
 end
 
 function ac.cheat.reborn(player, cmd)
-    local hero = player:get_first_hero()
+    local hero = player:get_hero()
     if hero then
         hero:reborn(player:input_mouse())
     end

@@ -13,7 +13,7 @@ ac.game:event('单位-死亡', function(_, hero)
         return
     end
     local player = hero:get_owner()
-    if player:get_first_hero() == hero then
+    if player:get_hero() == hero then
         player:set('复活时间', ac.clock() + new_time)
         player:set('复活时间上限', new_time)
     end
@@ -25,7 +25,7 @@ end)
 
 ac.game:event('单位-复活', function(trg, hero)
     local player = hero:get_owner()
-    if player:get_first_hero() == hero then
+    if player:get_hero() == hero then
         player:set('复活时间', 0)
         player:set('复活时间上限', 0)
     end
