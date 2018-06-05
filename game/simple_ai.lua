@@ -15,7 +15,7 @@ ac.game:event('单位-初始化', function (_, unit)
     unit:add_ai '简易AI'
     {
         attack = ac.ai_attack {},
-        search = data.SimpleAiSearch,
+        search = data.SimpleAiSearch == 1,
         chase_limit = data.SimpleAiChaseLimit,
         mode = 'none',
     }
