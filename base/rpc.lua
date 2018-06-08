@@ -1,55 +1,53 @@
-local coro = require 'ac.base.coroutine'
-
 local rpc_lib = {}
 local services = {}
+local rpc_sessions = {}
+local rpc_response = {}
+local rpc_id = 0
 local mt = {}
 mt.__index = mt
 
-function mt:__call(srvname, apiname, ...)
-    if self.__stat ~= 'init' then
-        error('RPC session has been doing.')
+function mt:emit(result, ...)
+	if self.__stat ~= 'wait' then
+		return
+	end
+    self.__stat = 'done'
+    if self.__event[result] then
+        self.__event[result](...)
     end
-    local srv = services[srvname]
-    if not srv then
-        error('No found RPC service `' .. srvname .. '`.')
-    end
-    local api = srv[apiname]
-    if not api then
-        error('No found RPC api `' .. srvname .. '.' .. apiname .. '`.')
-    end
-    self.__stat = 'wait'
-    return self:emit(coro.rpc(srvname .. '.' .. apiname, ...))
 end
 
-function mt:emit(name, ...)
-    if self.__stat ~= 'wait' then
+function ac.game.rpc_response(id, result, ...)
+    local self = rpc_sessions[id]
+    if not self then
         return
     end
-    self.__stat = 'done'
-    if name == 'ok' then
-        return true, ...
-    elseif name == 'error' then
-        return false, 'error', ...
-    elseif name == 'timeout' then
-        return false, 'timeout'
-    end
+    rpc_sessions[id] = nil
+    self:emit(result, ...)
 end
 
-function rpc_lib.session(...)
-    local s = setmetatable({ 
-        __stat = 'init',
-        __event = {},
+function rpc_lib.session(srvname, apiname, event, args)
+	local self = setmetatable({ 
+        __stat = 'wait',
+        __event = event,
     }, mt)
-    if select('#', ...) == 0 then
-        return s
-    end
-    return s(...)
+	local srv = services[srvname]
+	if not srv then
+		error('No found RPC service `' .. srvname .. '`.')
+	end
+	local api = srv[apiname]
+	if not api then
+		error('No found RPC api `' .. srvname .. '.' .. apiname .. '`.')
+	end
+    local name = srvname .. '.' .. apiname
+    rpc_id = rpc_id + 1
+    rpc_sessions[rpc_id] = self
+    ac.game.rpc_request(name, rpc_id, table.unpack(args))
 end
 
 function rpc_lib.register(name, apis)
     local t = {}
     for _, api in ipairs(apis) do
-        t[api] = true
+	    t[api] = true
     end
     services[name] = t
 end
@@ -58,28 +56,17 @@ ac.rpc_lib = rpc_lib
 ac.rpc_lib.register('bank', {'pay', 'query'})
 ac.rpc_lib.register('database', {'connect', 'commit'})
 
-local rpc = setmetatable({ sleep = coro.sleep }, {
+ac.rpc = setmetatable({}, {
     __index = function (_, srvname)
         return setmetatable({}, {
             __index = function (_, apiname)
                 return function (...)
-                    return rpc_lib.session(srvname, apiname, ...)
+                    local args = {...}
+                    return function (event)
+                        return rpc_lib.session(srvname, apiname, event, args)
+                    end
                 end
             end,
         })
     end,
 })
-
-function ac.rpc(f)
-    local co = coro.create(f)
-    coro.resume(co, rpc)
-end
-
-function ac.rpc_bank_query(rpc, player)
-    local ok, res = rpc.bank.query(player)
-    if ok then
-        return res
-    else
-        return 0
-    end
-end

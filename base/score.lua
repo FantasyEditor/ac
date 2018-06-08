@@ -101,9 +101,6 @@ function mt:get(source, key)
     if not tbl[key] then
         return nil
     end
-    if source == 'global' and self:quited() then
-        return nil
-    end
     return tbl[key].value
 end
 
@@ -158,49 +155,66 @@ function mt:update_score(source, list)
     self:flush_score(source)
 end
 
-function mt:commit(rpc)
+function mt:commit(events)
     if self.locked then
-        return false, 'error', '锁定'
+        events.error '锁定'
+        return
     end
     log.info(('提交玩家[%d]的积分'):format(self.player:get_slot_id()))
     local global, err = self:make_list('global')
     if not global then
-        return false, 'error', err
+        events.error(err)
+        return
     end
     local locals, err = self:make_list('locals')
     if not locals then
-        return false, 'error', err
+        events.error(err)
+        return
     end
     log.info(('推送玩家[%d]的积分，版本为[%d]'):format(self.player:get_slot_id(), self.version))
     self.locked = true
-    local ok, err, code = rpc.database.commit("score:"..self.player:get_slot_id(), self.version, global, locals)
-    self.locked = false
-    if ok then
-        log.info(('推送玩家[%d]的积分成功'):format(self.player:get_slot_id()))
-        self:update_score('global', global)
-        self:update_score('locals', locals)
-        return true
-    else
-        log.info(('推送玩家[%d]的积分失败，原因为：%s : %s'):format(self.player:get_slot_id(), err, code))
-    end
-    return false, err, code
+    ac.rpc.database.commit("score:"..self.player:get_slot_id(), self.version, global, locals)
+    {
+        ok = function ()
+            self.locked = false
+            log.info(('推送玩家[%d]的积分成功'):format(self.player:get_slot_id()))
+            self:update_score('global', global)
+            self:update_score('locals', locals)
+            events.ok()
+        end,
+        error = function (code)
+            self.locked = false
+            log.info(('推送玩家[%d]的积分失败，原因为：%s'):format(self.player:get_slot_id(), code))
+            events.error(code)
+        end,
+        timeout = function ()
+            self.locked = false
+            log.info(('推送玩家[%d]的积分超时'):format(self.player:get_slot_id()))
+            events.timeout()
+        end,
+    }
 end
 
 local function init_score()
     for player in ac.each_player 'user' do
         if player:controller() == 'human' then
-            ac.rpc(function (rpc)
-                log.info(('请求玩家[%s]的积分'):format(player:get_slot_id()))
-                score[player] = setmetatable({ player = player }, mt)
-                local ok, version, global = rpc.database.connect("score:"..player:get_slot_id())
-                if ok then
+            log.info(('请求玩家[%s]的积分'):format(player:get_slot_id()))
+            score[player] = setmetatable({ player = player }, mt)
+            ac.rpc.database.connect("score:"..player:get_slot_id())
+            {
+                ok = function (version, global)
                     log.info(('请求玩家[%s]的积分成功，版本为[%d]'):format(player:get_slot_id(), version))
                     score[player]:init(global, version)
-                else
+                end,
+                error = function (code)
                     score[player].inited = false
-                    log.info(('请求玩家[%s]的积分失败，原因为：%s : %s'):format(player:get_slot_id(), version, global))
-                end
-            end)
+                    log.info(('请求玩家[%s]的积分失败，原因为： %s'):format(player:get_slot_id(), code))
+                end,
+                timeout = function ()
+                    score[player].inited = false
+                    log.info(('请求玩家[%s]的积分超时'):format(player:get_slot_id()))
+                end,
+            }
         end
     end
 end
@@ -259,24 +273,23 @@ function ac.score.lget(player, key)
     return score[player]:get('locals', key)
 end
 
-function ac.score.commit(player, rpc)
-    if not score[player] then
-        return false, 'error', '未初始化'
+function ac.score.commit(player)
+    return function (events)
+        events.ok = events.ok or function () end
+        events.error = events.error or function () end
+        events.timeout = events.timeout or function () end
+        if not score[player] then
+            events.error '未初始化'
+            return
+        end
+        if score[player].inited == nil then
+            events.error '正在连接'
+            return
+        end
+        if score[player].inited == false then
+            events.error '连接失败'
+            return
+        end
+        return score[player]:commit(events)
     end
-    if score[player].inited == nil then
-        return false, 'error', '正在连接'
-    end
-    if score[player].inited == false then
-        return false, 'error', '连接失败'
-    end
-    if not rpc then
-        error('必须在RPC环境中提交积分。')
-    end
-    return score[player]:commit(rpc)
-end
-
-function ac.score.async_commit(player)
-    ac.rpc(function (rpc)
-        ac.score.commit(player, rpc)
-    end)
 end
