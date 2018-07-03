@@ -8,12 +8,12 @@ mt.version = -1
 mt.locked = false
 mt.leave_clock = nil
 mt.inited = nil
+mt.on_init_events = nil
 
 local score = {}
 
 function mt:init(global, version)
     self.version = version
-    self.inited = true
     self.global = {}
     self.locals = {}
     for k, v in pairs(global) do
@@ -26,6 +26,17 @@ function mt:init(global, version)
     self.player:event('玩家-重连', function ()
         self.leave_clock = nil
     end)
+end
+
+function mt:check_init()
+    local events = self.on_init_events
+    if not events then
+        return
+    end
+    local state = self.inited
+    if events[state] then
+        events[state]()
+    end
 end
 
 function mt:quited()
@@ -204,15 +215,19 @@ local function init_score()
             {
                 ok = function (version, global)
                     log.info(('请求玩家[%s]的积分成功，版本为[%d]'):format(player:get_slot_id(), version))
+                    score[player].inited = 'ok'
                     score[player]:init(global, version)
+                    score[player]:check_init()
                 end,
                 error = function (code)
-                    score[player].inited = false
                     log.info(('请求玩家[%s]的积分失败，原因为： %s'):format(player:get_slot_id(), code))
+                    score[player].inited = 'error'
+                    score[player]:check_init()
                 end,
                 timeout = function ()
-                    score[player].inited = false
                     log.info(('请求玩家[%s]的积分超时'):format(player:get_slot_id()))
+                    score[player].inited = 'timeout'
+                    score[player]:check_init()
                 end,
             }
         end
@@ -223,8 +238,18 @@ init_score()
 
 ac.score = {}
 
+function ac.score.on_init(player)
+    return function (events)
+        if not score[player] then
+            return false
+        end
+        score[player].on_init_events = events
+        score[player]:check_init()
+    end
+end
+
 function ac.score.set(player, key, value)
-    if not score[player] or not score[player].inited then
+    if not score[player] or score[player].inited ~= 'ok' then
         return false
     end
     if value == nil then
@@ -235,21 +260,21 @@ function ac.score.set(player, key, value)
 end
 
 function ac.score.add(player, key, value)
-    if not score[player] or not score[player].inited then
+    if not score[player] or score[player].inited ~= 'ok' then
         return false
     end
     return score[player]:add('global', key, value)
 end
 
 function ac.score.get(player, key)
-    if not score[player] or not score[player].inited then
+    if not score[player] or score[player].inited ~= 'ok' then
         return false
     end
     return score[player]:get('global', key)
 end
 
 function ac.score.lset(player, key, value)
-    if not score[player] or not score[player].inited then
+    if not score[player] or score[player].inited ~= 'ok' then
         return false
     end
     if value == nil then
@@ -260,14 +285,14 @@ function ac.score.lset(player, key, value)
 end
 
 function ac.score.ladd(player, key, value)
-    if not score[player] or not score[player].inited then
+    if not score[player] or score[player].inited ~= 'ok' then
         return false
     end
     return score[player]:add('locals', key, value)
 end
 
 function ac.score.lget(player, key)
-    if not score[player] or not score[player].inited then
+    if not score[player] or score[player].inited ~= 'ok' then
         return false
     end
     return score[player]:get('locals', key)
@@ -286,8 +311,12 @@ function ac.score.commit(player)
             events.error '正在连接'
             return
         end
-        if score[player].inited == false then
+        if score[player].inited == 'error' then
             events.error '连接失败'
+            return
+        end
+        if score[player].inited == 'timeout' then
+            events.error '连接超时'
             return
         end
         return score[player]:commit(events)
