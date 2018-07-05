@@ -54,7 +54,7 @@ function ac.math.float_lt(a, b)
 end
 
 function ac.math.float_le(a, b)
-    return a - b <= -1e-5
+    return a - b <= 1e-5
 end
 
 function ac.math.float_gt(a, b)
@@ -62,7 +62,7 @@ function ac.math.float_gt(a, b)
 end
 
 function ac.math.float_ge(a, b)
-    return a - b >= 1e-5
+    return a - b >= -1e-5
 end
 
 -- 随机浮点数
