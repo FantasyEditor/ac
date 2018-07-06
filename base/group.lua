@@ -43,7 +43,7 @@ end
 function mt:ipairs()
     local sort = {}
     for obj in pairs(self.table) do
-        t[#t+1] = obj
+        sort[#sort+1] = obj
     end
     table.sort(sort, function(a, b)
         return self.table[a] < self.table[b]
