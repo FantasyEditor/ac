@@ -222,7 +222,9 @@ end
 function ac.cheat.self(player, cmd)
     table.remove(cmd, 1)
     local hero = player:get_hero()
-    ac.cheat.call_method(hero, cmd)
+    if hero then
+        ac.cheat.call_method(hero, cmd)
+    end
 end
 
 function ac.cheat.reborn(player, cmd)
