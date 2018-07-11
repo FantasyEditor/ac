@@ -54,7 +54,7 @@ end
 
 ac.rpc_lib = rpc_lib
 ac.rpc_lib.register('bank', {'pay', 'query'})
-ac.rpc_lib.register('database', {'connect', 'commit'})
+ac.rpc_lib.register('database', {'connect', 'commit', 'query'})
 
 ac.rpc = setmetatable({}, {
     __index = function (_, srvname)
