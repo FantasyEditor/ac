@@ -12,6 +12,7 @@ function mt:init(items)
     for k, v in pairs(items) do
         log.info(('+   [%s] = %s'):format(k, v))
     end
+    self:query(0)
 end
 
 function mt:check_init()
@@ -23,6 +24,49 @@ function mt:check_init()
     if events[state] then
         events[state]()
     end
+end
+
+function mt:update(items)
+    for k, v in pairs(items) do
+        self.items[k] = v
+        log.info(('+   [%s] = %s'):format(k, v))
+    end
+end
+
+function mt:query(try)
+    if try >= 5 then
+        log.error('监听玩家[%d]的道具变化失败过多，放弃监听')
+        return
+    end
+    log.info(('监听玩家[%d]的道具变化，尝试次数[%d]'):format(self.player:get_slot_id()), try)
+    local clock = ac.clock()
+    ac.rpc.database.query('item:'..tostring(self.player:get_slot_id()))
+    {
+        ok = function (items)
+            log.info(('监听玩家[%d]的道具变化成功'):format(self.player:get_slot_id()))
+            self:update(items)
+            if ac.clock() - clock >= 100 then
+                self:query(0)
+            else
+                log.warn('返回过快')
+                ac.wait(100, function ()
+                    self:query(0)
+                end)
+            end
+        end,
+        error = function (code)
+            log.error(('监听玩家[%d]的道具变化失败，原因为：%s'):format(self.player:get_slot_id()), code)
+            ac.wait(1000, function ()
+                self:query(try + 1)
+            end)
+        end,
+        timeout = function ()
+            log.error(('监听玩家[%d]的道具变化超时'):format(self.player:get_slot_id()))
+            ac.wait(1000, function ()
+                self:query(try + 1)
+            end)
+        end,
+    }
 end
 
 function mt:get(name)
