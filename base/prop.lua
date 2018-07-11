@@ -9,6 +9,7 @@ mt.on_init_events = nil
 
 function mt:init(items)
     self.items = items
+    self.locked = {}
     for k, v in pairs(items) do
         log.info(('+   [%s] = %s'):format(k, v))
     end
@@ -71,33 +72,35 @@ function mt:get(name)
 end
 
 function mt:add(events, name, value)
-    if type(name) ~= 'string' then
-        events.error '道具名称必须是字符串'
-        return
-    end
     local value = math.tointeger(value)
-    if not value then
-        events.error '道具数量必须是整数'
+    assert(type(name) == 'string', '道具名称必须是字符串')
+    assert(value ~= nil, '道具数量必须是整数')
+    if self.locked[name] then
+        events.error '锁定'
         return
     end
     local n = self:get(name)
     if n + value < 0 then
-        events.error '道具数量不够'
+        events.error '数量不够'
         return
     end
 
     log.info(('推送玩家[%d]的道具变化：[%s] %+d'):format(self.player:get_slot_id(), name, value))
+    self.locked[name] = true
     ac.rpc.database.commit('item:'..tostring(self.player:get_slot_id()), name, value)
     {
         ok = function ()
+            self.locked[name] = nil
             log.info(('推送玩家[%d]的道具变化成功'):format(self.player:get_slot_id()))
             events.ok()
         end,
         error = function (code)
+            self.locked[name] = nil
             log.info(('推送玩家[%d]的道具变化失败，原因为：%s'):format(self.player:get_slot_id(), code))
             events.error(code)
         end,
         timeout = function ()
+            self.locked[name] = nil
             log.info(('推送玩家[%d]的道具变化超时'):format(self.player:get_slot_id()))
             events.timeout()
         end,
