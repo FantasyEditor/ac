@@ -184,7 +184,7 @@ function mt:commit(events)
     end
     log.info(('推送玩家[%d]的积分，版本为[%d]'):format(self.player:get_slot_id(), self.version))
     self.locked = true
-    ac.rpc.database.commit("score:"..self.player:get_slot_id(), self.version, global, locals)
+    ac.rpc.database.commit("score:"..tostring(self.player:get_slot_id()), self.version, global, locals)
     {
         ok = function ()
             self.locked = false
@@ -211,7 +211,7 @@ local function init_score()
         if player:controller() == 'human' then
             log.info(('请求玩家[%s]的积分'):format(player:get_slot_id()))
             score[player] = setmetatable({ player = player }, mt)
-            ac.rpc.database.connect("score:"..player:get_slot_id())
+            ac.rpc.database.connect("score:"..tostring(player:get_slot_id()))
             {
                 ok = function (version, global)
                     log.info(('请求玩家[%s]的积分成功，版本为[%d]'):format(player:get_slot_id(), version))
