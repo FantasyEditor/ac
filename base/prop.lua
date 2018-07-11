@@ -140,10 +140,10 @@ function ac.prop.on_init(player)
 end
 
 function ac.prop.get(player, name)
-    if not score[player] or score[player].inited ~= 'ok' then
+    if not prop[player] or prop[player].inited ~= 'ok' then
         return false
     end
-    return score[player]:get(name)
+    return prop[player]:get(name)
 end
 
 function ac.prop.add(player, name, value)
