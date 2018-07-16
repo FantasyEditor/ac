@@ -15,8 +15,9 @@ end
 local function update_hero_skill(hero)
     hero._hero_skill = {}
     local n = 0
-    for skill in hero:get_data().HeroSkill:gmatch '[^;]+' do
-        n = n + 1
+    local skills = hero:get_data().HeroSkill
+    if type(skills) == 'table' then
+        n = #skills
     end
     for skill in hero:each_skill() do
         if skill:get_type() == '英雄' and skill:get_slot_id() < n then
