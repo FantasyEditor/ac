@@ -45,9 +45,6 @@ local notify_events = {
     '玩家-重连',
     '玩家-修改设置',
     '游戏-阶段切换',
-    '群雄2-前端消息',
-    '群雄2-后端消息',
-    '自定义UI-消息',
 }
 
 for _, event in ipairs(dispatch_events) do
