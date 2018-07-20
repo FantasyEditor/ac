@@ -134,19 +134,18 @@ function ac.remove(obj)
     end
 end
 
-local gc_mt = {
-    __mode = 'k',
-    __shl = function (self, obj)
-        self[obj] = true
-        return obj
-    end,
-    __index = self,
-    flush = function (self)
-        for obj in pairs(self) do
-            obj:remove()
-        end
-    end,
-}
+local gc_mt = {}
+gc_mt.__mode = 'k'
+gc_mt.__index = gc_mt
+function gc_mt:__shl(obj)
+    self[obj] = true
+    return obj
+end
+function gc_mt:flush()
+    for obj in pairs(self) do
+        obj:remove()
+    end
+end
 function ac.gc()
     return setmetatable({}, gc_mt)
 end
