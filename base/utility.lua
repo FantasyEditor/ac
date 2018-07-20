@@ -148,5 +148,5 @@ local gc_mt = {
     end,
 }
 function ac.gc()
-    return setmetatable(gc_mt)
+    return setmetatable({}, gc_mt)
 end
