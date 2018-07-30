@@ -96,8 +96,10 @@ ac.aura_buff = create_template(function(mt)
             self.aura_pulse = 0.5
         end
         local aura_pulse = self.aura_pulse * 1000
-        local hero = self.target 
-        self.child_buff = self.child_buff or self.name
+        local hero = self.target
+        if not self.child_buff or self.child_buff == '' then
+            self.child_buff = self.name
+        end
         local child_mt = ac.buff[self.child_buff]
         local child_pulse = child_mt.pulse or self.pulse
         if not child_mt.aura_child_mark then
