@@ -79,9 +79,10 @@ function mt:add(events, name, value)
     self.locked[name] = true
     ac.rpc.database.commit('item:'..tostring(self.player:get_slot_id()), name, value)
     {
-        ok = function ()
+        ok = function (v)
             self.locked[name] = nil
-            log.info(('推送玩家[%d]的道具变化成功'):format(self.player:get_slot_id()))
+            self.items[name] = v
+            log.info(('推送玩家[%d]的道具变化成功，现有数量为：%d'):format(self.player:get_slot_id(), v))
             events.ok()
         end,
         error = function (code)
