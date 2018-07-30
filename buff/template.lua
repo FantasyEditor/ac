@@ -210,22 +210,23 @@ ac.shield_buff = create_template(function(mt)
     function mt:on_cover(dst)
         if self.__on_cover then return self:__on_cover(dst) end
         if self.life < dst.life then
-            self:add_life(dst.life - self.life)
+            self:set_life(dst.life)
         end
         if self:get_remaining() < dst.time then
             self:set_remaining(dst.time)
         end
         return false
     end
-    function mt:add_life(life)
-        if self.life + life <= 0 then
+    function mt:set_life(life)
+        if life <= 0 then
             self.target:add('护盾', - self.life)
             self.life = 0
             self:remove()
             return
         end
-        self.life = self.life + life
-        self.target:add('护盾', life)
+        local delta = life - self.life
+        self.life = life
+        self.target:add('护盾', delta)
     end
 end)
 
