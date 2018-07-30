@@ -134,6 +134,13 @@ function ac.remove(obj)
     end
 end
 
+function ac.bit_has(int, bit)
+    if not math.tointeger(int) then
+        return false
+    end
+    return int & bit ~= 0
+end
+
 local gc_mt = {}
 gc_mt.__mode = 'k'
 gc_mt.__index = gc_mt
