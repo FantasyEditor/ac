@@ -34,6 +34,10 @@ function mt:set_current_damage(damage)
     self.current_damage = damage
 end
 
+function mt:set_crit()
+    self.crit_flag = true
+end
+
 function mt:get_angle()
     return self.angle or self.source:get_point() / self.target:get_point()
 end
