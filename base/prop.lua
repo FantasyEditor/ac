@@ -83,7 +83,7 @@ function mt:add(events, name, value)
             self.locked[name] = nil
             self.items[name] = v
             log.info(('推送玩家[%d]的道具变化成功，现有数量为：%d'):format(self.player:get_slot_id(), v))
-            events.ok()
+            events.ok(v)
         end,
         error = function (code)
             self.locked[name] = nil
