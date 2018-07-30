@@ -29,8 +29,8 @@ end
 
 function mt:update(items)
     for k, v in pairs(items) do
-        self.items[k] = (self.items[k] or 0) + v
-        log.info(('+   [%s] += %s -> %s'):format(k, v, self.items[k]))
+        self.items[k] = v
+        log.info(('+   [%s] = %s'):format(k, v))
     end
 end
 
@@ -82,7 +82,6 @@ function mt:add(events, name, value)
         ok = function ()
             self.locked[name] = nil
             log.info(('推送玩家[%d]的道具变化成功'):format(self.player:get_slot_id()))
-            self:update { [name] = value }
             events.ok()
         end,
         error = function (code)
