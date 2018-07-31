@@ -3,6 +3,10 @@ mt.__index = mt
 
 mt.type = 'line'
 
+function mt:source_point()
+    return self[1]
+end
+
 function ac.line(points)
     local keys = {}
     local nodes = {}
