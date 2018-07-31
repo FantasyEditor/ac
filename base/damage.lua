@@ -69,7 +69,7 @@ local function cost_shield(self)
     local lost_shields = {}
     for _, shield in ipairs(shields) do
         if effect_damage < shield.life then
-            shield:add_life( - effect_damage)
+            shield:set_life(shield.life - effect_damage)
             effect_damage = 0
             break
         end
