@@ -201,6 +201,37 @@ function mt:sort_nearest_unit(poi)
     end)
 end
 
+--排序：1.英雄 2.和poi的距离
+function mt:sort_nearest_hero(poi)
+    local poi = poi:get_point()
+    return self:set_sorter(function (u1, u2)
+        local t1 = u1:get_type()
+        local t2 = u2:get_type()
+        if t1 == '英雄' and t2 ~= '英雄' then
+            return true
+        end
+        if t1 ~= '英雄' and t2 == '英雄' then
+            return false
+        end
+        return u1:get_point() * poi < u2:get_point() * poi
+    end)
+end
+
+--排序：1.英雄 2.血量
+function mt:sort_weakest_hero()
+    return self:set_sorter(function (u1, u2)
+        local t1 = u1:get_type()
+        local t2 = u2:get_type()
+        if t1 == '英雄' and t2 ~= '英雄' then
+            return true
+        end
+        if t1 ~= '英雄' and t2 == '英雄' then
+            return false
+        end
+        return u1:get '生命' < u2:get '生命'
+    end)
+end
+
 function mt:get()
     local units = {}
     local group
