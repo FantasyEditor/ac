@@ -97,6 +97,13 @@ local function search(unit, state)
         return
     end
 
+    -- 如果能攻击到上次搜到的敌人，则直接攻击这个敌人
+    if state.last_search and unit:can_attack(state.last_search) then
+        unit:attack(state.last_search)
+    else
+        state.last_search = nil
+    end
+
     -- 搜敌
     local search_range = unit:get '搜敌范围'
     local target
@@ -112,6 +119,7 @@ local function search(unit, state)
             state.guard = unit:get_point()
         end
         state.mode = 'attack'
+        state.last_search = target
         unit:attack(target)
         return true
     end
