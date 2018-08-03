@@ -145,6 +145,9 @@ local gc_mt = {}
 gc_mt.__mode = 'k'
 gc_mt.__index = gc_mt
 function gc_mt:__shl(obj)
+    if obj == nil then
+        return nil
+    end
     self[obj] = true
     return obj
 end
