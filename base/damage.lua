@@ -14,7 +14,7 @@ mt.target = nil
 mt.damage = 0
 
 -- 当前伤害
-mt.current_damage = 0
+mt.current_damage = nil
 
 -- 是否成功
 mt.success = false
@@ -27,7 +27,7 @@ function mt:get_damage()
 end
 
 function mt:get_current_damage()
-    return self.current_damage
+    return self.current_damage or self.damage
 end
 
 function mt:set_current_damage(damage)
@@ -113,7 +113,9 @@ ac.event['伤害-结算'] = function (self)
         end
     end
 
-    self.current_damage = self.damage
+    if not self.current_damage then
+        self.current_damage = self.damage
+    end
     
     if not source then
         self.source = self.target
