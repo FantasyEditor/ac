@@ -80,6 +80,11 @@ local function get_dis_point(point1, point2)
 end
 
 local function search(unit, state)
+    -- 不允许自动攻击，禁止搜敌
+    if not state.search and state.mode ~= 'walk-attack' then
+        return
+    end
+
     local attack_skill = unit:attack_skill()
 
     -- 没有攻击能力，禁止搜敌
@@ -87,11 +92,11 @@ local function search(unit, state)
         return
     end
     
-    -- 不允许自动攻击，禁止搜敌
-    if not state.search and state.mode ~= 'walk-attack' then
+    -- 攻击在冷却，禁止搜敌
+    if attack_skill:get_cd() > 0 then
         return
     end
-
+    
     -- 隐身或者失控，禁止搜敌
     if unit:has_restriction '隐身' or unit:has_restriction '失控' or unit:has_restriction '赤座灯里' then
         return
