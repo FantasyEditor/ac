@@ -108,6 +108,9 @@ function ac.check_point(point)
     if point and point.type == 'point' then
         return point
     end
+    if point and point.get_point then
+        return point:get_point()
+    end
     return nil
 end
 
