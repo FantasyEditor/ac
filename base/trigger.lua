@@ -65,7 +65,9 @@ function mt:remove()
             end
         end
         if #event == 0 then
-            event:remove()
+            if event.remove then
+                event:remove()
+            end
         end
     end)
 end
