@@ -33,11 +33,15 @@ function mt:load(k1, k2, tp, def)
     return value[2]
 end
 
-function mt:remove_parent(k1)
+function mt:flush()
+    self.t = new_wk()
+end
+
+function mt:flush_parent(k1)
     self.t[k1] = nil
 end
 
-function mt:remove_child(k1, k2)
+function mt:flush_child(k1, k2)
     local parent = self.t[k1]
     if not parent then
         return
