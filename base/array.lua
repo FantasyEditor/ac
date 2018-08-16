@@ -1,7 +1,9 @@
 local mt = {}
 
 function mt:__index(pos)
-    assert(pos > 0, '数组索引越界')
+    if pos <= 0 then
+        error(('数组取值索引必须大于0，但使用的索引是[%d]'):format(pos), 2)
+    end
     local value = rawget(self, '_default')
     if type(value) == 'function' then
         value = value()
@@ -11,7 +13,9 @@ function mt:__index(pos)
 end
 
 function mt:__newindex(pos, value)
-    assert(pos > 0, '数组索引越界')
+    if pos <= 0 then
+        error(('数组赋值索引必须大于0，但使用的索引是[%d]'):format(pos), 2)
+    end
     rawset(self, pos, value)
     if pos > self._len then
         self._len = pos
@@ -41,7 +45,12 @@ end
 
 local function insert(self, pos, value)
     local e = self._len + 1
-    assert(1 <= pos and pos <= e, '数组索引越界')
+    if pos <= 0 then
+        error(('数组插入索引必须大于0，但使用的索引是[%d]'):format(pos), 2)
+    end
+    if pos > e then
+        error(('数组插入索引不能大于[%d]，但使用的索引是[%d]'):format(e, pos), 2)
+    end
     for i = e, pos+1, -1 do
         rawset(self, i, rawget(self, i-1))
     end
@@ -52,7 +61,12 @@ end
 local function remove(self, pos)
     local size = self._len
     if pos ~= size then
-        assert(1 <= pos and pos <= size + 1, '数组索引越界')
+        if pos <= 0 then
+            error(('数组抽出索引必须大于0，但使用的索引是[%d]'):format(pos), 2)
+        end
+        if pos > size + 1 then
+            error(('数组抽出索引不能大于[%d]，但使用的索引是[%d]'):format(size + 1, pos), 2)
+        end
     end
     while pos < size do
         rawset(self, pos, rawget(self, pos+1))
@@ -64,7 +78,9 @@ end
 
 local function random(self)
     local size = self._len
-    assert(size > 0, '数组大小为0')
+    if size == 0 then
+        error('不能对大小为0的数组取随机值', 2)
+    end
     return self[math.random(size)]
 end
 
