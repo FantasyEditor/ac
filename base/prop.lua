@@ -116,7 +116,7 @@ function mt:multi_cost(events, data)
             events.error '数量不够'
             return
         end
-        list[#list] = {name, -value}
+        list[#list+1] = {name, -value}
     end
 
     log.info(('推送玩家[%d]的道具批量变化'):format(self.player:get_slot_id()))
