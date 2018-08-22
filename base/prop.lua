@@ -78,9 +78,10 @@ function mt:cost(events, name, value)
 
     log.info(('推送玩家[%d]的道具变化：[%s] %+d'):format(self.player:get_slot_id(), name, -value))
     self.locked[name] = true
-    ac.rpc.database.commit('item:'..tostring(self.player:get_slot_id()), name, -value)
+    ac.rpc.database.commit('item:'..tostring(self.player:get_slot_id()), {{name, -value}})
     {
-        ok = function (v)
+        ok = function (data)
+            local v = data[name]
             self.locked[name] = nil
             self.items[name] = v
             log.info(('推送玩家[%d]的道具变化成功，现有数量为：%d'):format(self.player:get_slot_id(), v))
@@ -94,6 +95,63 @@ function mt:cost(events, name, value)
         timeout = function ()
             self.locked[name] = nil
             log.info(('推送玩家[%d]的道具变化超时'):format(self.player:get_slot_id()))
+            events.timeout()
+        end,
+    }
+end
+
+function mt:multi_cost(events, data)
+    local list = {}
+    for name, value in pairs(data) do
+        local value = math.tointeger(value)
+        assert(type(name) == 'string', '道具名称必须是字符串')
+        assert(value ~= nil, '道具数量必须是整数')
+        assert(value > 0, '扣除的道具数量必须大于0')
+        if self.locked[name] then
+            events.error '锁定'
+            return
+        end
+        local n = self:get(name)
+        if n - value < 0 then
+            events.error '数量不够'
+            return
+        end
+        list[#list] = {name, -value}
+    end
+
+    log.info(('推送玩家[%d]的道具批量变化'):format(self.player:get_slot_id()))
+    for _, item in ipairs(list) do
+        local name, value = item[1], item[2]
+        self.locked[name] = true
+        log.info(('+   [%s] %d'):format(name, value))
+    end
+
+    local function unlock()
+        for _, item in ipairs(list) do
+            local name = item[1]
+            self.locked[name] = nil
+        end
+    end
+
+    ac.rpc.database.commit('item:'..tostring(self.player:get_slot_id()), list)
+    {
+        ok = function (data)
+            unlock()
+            log.info(('推送玩家[%d]的道具批量变化成功'):format(self.player:get_slot_id()))
+            for name, v in pairs(data) do
+                log.info(('+   [%s] %d'):format(name, v))
+                self.items[name] = v
+            end
+            events.ok(data)
+        end,
+        error = function (code)
+            unlock()
+            log.info(('推送玩家[%d]的道具批量变化失败，原因为：%s'):format(self.player:get_slot_id(), code))
+            events.error(code)
+        end,
+        timeout = function ()
+            unlock()
+            log.info(('推送玩家[%d]的道具批量变化超时'):format(self.player:get_slot_id()))
             events.timeout()
         end,
     }
@@ -170,5 +228,30 @@ function ac.prop.cost(player, name, value)
             return
         end
         return prop[player]:cost(events, name, value)
+    end
+end
+
+function ac.prop.multi_cost(player, name, value)
+    return function (events)
+        events.ok = events.ok or function () end
+        events.error = events.error or function () end
+        events.timeout = events.timeout or function () end
+        if not prop[player] then
+            events.error '未初始化'
+            return
+        end
+        if prop[player].inited == nil then
+            events.error '正在连接'
+            return
+        end
+        if prop[player].inited == 'error' then
+            events.error '连接失败'
+            return
+        end
+        if prop[player].inited == 'timeout' then
+            events.error '连接超时'
+            return
+        end
+        return prop[player]:multi_cost(events, name, value)
     end
 end
