@@ -85,7 +85,7 @@ function mt:cost(events, name, value)
             self.locked[name] = nil
             self.items[name] = v
             log.info(('推送玩家[%d]的道具变化成功，现有数量为：%d'):format(self.player:get_slot_id(), v))
-            events.ok(v)
+            events.ok()
         end,
         error = function (code)
             self.locked[name] = nil
@@ -135,14 +135,14 @@ function mt:multi_cost(events, data)
 
     ac.rpc.database.commit('item:'..tostring(self.player:get_slot_id()), list)
     {
-        ok = function (data)
+        ok = function (items)
             unlock()
             log.info(('推送玩家[%d]的道具批量变化成功'):format(self.player:get_slot_id()))
-            for name, v in pairs(data) do
+            for name, v in pairs(items) do
                 log.info(('+   [%s] %d'):format(name, v))
                 self.items[name] = v
             end
-            events.ok(data)
+            events.ok()
         end,
         error = function (code)
             unlock()
