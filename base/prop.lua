@@ -7,13 +7,21 @@ mt.player = nil
 mt.inited = nil
 mt.on_init_events = nil
 
-function mt:init(items)
+function mt:init_items(items)
     self.items = items
     self.locked = {}
     for k, v in pairs(items) do
         log.info(('+   [%s] = %s'):format(k, v))
     end
     self:query()
+end
+
+function mt:init_status(status)
+    self.status = {}
+    for _, name in ipairs(status) do
+        self.status[name] = true
+    end
+    log.info(('拥有状态：%s'):format(table.concat(self.status, ';')))
 end
 
 function mt:check_init()
@@ -157,6 +165,29 @@ function mt:multi_cost(events, data)
     }
 end
 
+function mt:has(name)
+    return not not self.status[name]
+end
+
+function mt:init_result(type, res)
+    if self.inited then
+        return
+    end
+    if res == 'error' or res == 'timeout' then
+        self.inited = res
+        self:check_init()
+        return
+    end
+    if not self.has_inited then
+        self.has_inited = {}
+    end
+    self.has_inited[type] = res
+    if self.has_inited['道具'] == 'ok' and self.has_inited['状态'] == 'ok' then
+        self.inited = 'ok'
+        self:check_init()
+    end
+end
+
 local function init_prop()
     for player in ac.each_player 'user' do
         if player:controller() == 'human' then
@@ -166,19 +197,32 @@ local function init_prop()
             {
                 ok = function (items)
                     log.info(('请求玩家[%s]的道具成功'):format(player:get_slot_id()))
-                    prop[player].inited = 'ok'
-                    prop[player]:init(items)
-                    prop[player]:check_init()
+                    prop[player]:init_items(items)
+                    prop[player]:init_result('道具', 'ok')
                 end,
                 error = function (code)
                     log.info(('请求玩家[%s]的道具失败，原因为： %s'):format(player:get_slot_id(), code))
-                    prop[player].inited = 'error'
-                    prop[player]:check_init()
+                    prop[player]:init_result('道具', 'error')
                 end,
                 timeout = function ()
                     log.info(('请求玩家[%s]的道具超时'):format(player:get_slot_id()))
-                    prop[player].inited = 'timeout'
-                    prop[player]:check_init()
+                    prop[player]:init_result('道具', 'timeout')
+                end,
+            }
+            ac.rpc.database.connect('status:'..tostring(player:get_slot_id()))
+            {
+                ok = function (status)
+                    log.info(('请求玩家[%s]的状态成功'):format(player:get_slot_id()))
+                    prop[player]:init_status(status)
+                    prop[player]:init_result('状态', 'ok')
+                end,
+                error = function (code)
+                    log.info(('请求玩家[%s]的状态失败，原因为： %s'):format(player:get_slot_id(), code))
+                    prop[player]:init_result('状态', 'error')
+                end,
+                timeout = function ()
+                    log.info(('请求玩家[%s]的状态超时'):format(player:get_slot_id()))
+                    prop[player]:init_result('状态', 'timeout')
                 end,
             }
         end
@@ -254,4 +298,11 @@ function ac.prop.multi_cost(player, name, value)
         end
         return prop[player]:multi_cost(events, name, value)
     end
+end
+
+function ac.prop.has(player, name)
+    if not prop[player] or prop[player].inited ~= 'ok' then
+        return false
+    end
+    return prop[player]:has(name)
 end
