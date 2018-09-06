@@ -93,7 +93,7 @@ local function new_bind(player, name, keys)
             end
 
             state[key] = value
-            if type(value) = 'function' then
+            if type(value) == 'function' then
                 -- 通知客户端订阅事件，将函数pointer作为id，监听返回时使用notify协议
                 local pointer = tostring(value)
                 SUBSCRIPT[pointer] = value
