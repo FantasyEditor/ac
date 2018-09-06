@@ -41,7 +41,7 @@ function ac.game:ui(type)
     end
 end
 
-ac.game:event('自定义UI-消息', function (_, player, str)
+ac.game:event('玩家-界面消息', function (_, player, str)
     if str:find('--!', 1, true) then
         logger(table.concat({('玩家[%d]发送了非法的消息'):format(player:get_slot_id()), str}, '\r\n'))
         return

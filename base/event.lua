@@ -46,6 +46,7 @@ local notify_events = {
     '玩家-放弃重连',
     '玩家-修改设置',
     '游戏-阶段切换',
+    '自定义UI-消息',
 }
 
 for _, event in ipairs(dispatch_events) do
@@ -70,8 +71,13 @@ end
 
 -- 上层拆分的事件，需要订阅原事件
 local event_subscribe_list = {
+    ['玩家-界面消息'] = '自定义UI-消息',
 }
 ac.event_subscribe_list = event_subscribe_list
+
+ac.event['自定义UI-消息'] = function (self, ...)
+    self:event_notify('玩家-界面消息', self, ...)
+end
 
 function ac.event_dispatch(obj, name, ...)
     local events = obj._events
