@@ -8,6 +8,11 @@ local SUBSCRIPT = {}
 
 local proto = {}
 
+local logger = log.warn
+if ac.test then
+    logger = log.error
+end
+
 function proto.notify(data)
     local callback = SUBSCRIPT[data.id]
     if not callback then
@@ -38,20 +43,20 @@ end
 
 ac.game:event('自定义UI-消息', function (_, player, str)
     if str:find('--!', 1, true) then
-        log.warn(table.concat({('玩家[%d]发送了非法的消息'):format(player:get_slot_id()), str}, '\r\n'))
+        logger(table.concat({('玩家[%d]发送了非法的消息'):format(player:get_slot_id()), str}, '\r\n'))
         return
     end
     local suc, res = pcall(lni, str)
     if not suc then
-        log.warn(table.concat({('玩家[%d]发送了错误的消息'):format(player:get_slot_id()), str, res}, '\r\n'))
+        logger(table.concat({('玩家[%d]发送了错误的消息'):format(player:get_slot_id()), str, res}, '\r\n'))
         return
     end
     local type, args = res.type, res.args
     if not proto[type] then
-        log.warn(table.concat({('玩家[%d]发送了错误的消息'):format(player:get_slot_id()), str, res}, '\r\n'))
+        logger(table.concat({('玩家[%d]发送了错误的消息'):format(player:get_slot_id()), str, res}, '\r\n'))
         return
     end
-    xpcall(proto[type], log.error, args)
+    xpcall(proto[type], logger, args)
 end)
 
 ac.loop(33, function ()
