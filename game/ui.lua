@@ -1,9 +1,7 @@
 local lni = require 'lni'
 local lni_writer = require 'ac.base.lni_writer'
 
-local ROOT = {}
-local MSG  = { root = ROOT }
-
+local MSG = {}
 local SUBSCRIPT = {}
 
 local proto = {}
@@ -23,8 +21,8 @@ end
 
 function ac.runtime.player:ui(type)
     return function (args)
-        ROOT.type = type
-        ROOT.args = args
+        MSG.type = type
+        MSG.args = args
         local msg = lni_writer(MSG)
         self:ui_message(msg)
     end
@@ -32,8 +30,8 @@ end
 
 function ac.game:ui(type)
     return function (args)
-        ROOT.type = type
-        ROOT.args = args
+        MSG.type = type
+        MSG.args = args
         local msg = lni_writer(MSG)
         for player in ac.each_player 'user' do
             player:ui_message(msg)
@@ -53,7 +51,7 @@ ac.game:event('玩家-界面消息', function (_, player, str)
     end
     local type, args = res.type, res.args
     if not proto[type] then
-        logger(table.concat({('玩家[%d]发送了错误的消息'):format(player:get_slot_id()), str, res}, '\r\n'))
+        logger(table.concat({('玩家[%d]发送了错误的消息'):format(player:get_slot_id()), str}, '\r\n'))
         return
     end
     xpcall(proto[type], logger, args)
