@@ -36,7 +36,7 @@ function ac.split(str, p)
 end
 
 function ac.utf8_sub(s, i, j)
-    local codes = { utf8.codepoints(s, 1, -1) }
+    local codes = { utf8.codepoint(s, 1, -1) }
     local len = #codes
     if i < 0 then
         i = len + 1 +i
